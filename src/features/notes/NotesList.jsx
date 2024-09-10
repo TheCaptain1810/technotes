@@ -1,5 +1,5 @@
 export default function NotesList() {
   return (
-    <div>NotesList</div>
+    <h1>NotesList</h1>
   )
 }
