@@ -11,21 +11,26 @@ const UsersList = () => {
         error
     } = useGetUsersQuery()
 
+    console.log("Users query result:", { users, isLoading, isSuccess, isError, error });
+
     let content
 
-    if (isLoading) content = <p>Loading...</p>
-
-    if (isError) {
-        content = <p className="errmsg">{error?.data?.message}</p>
-    }
-
-    if (isSuccess) {
-
+    if (isLoading) {
+        content = <p>Loading...</p>
+    } else if (isError) {
+        content = (
+            <div className="error-message">
+                <p>Error: {error.error}</p>
+                <p>Status: {error.status}</p>
+                <p>Please try again later or contact support if the problem persists.</p>
+            </div>
+        )
+    } else if (isSuccess && users) {
         const { ids } = users
 
         const tableContent = ids?.length
             ? ids.map(userId => <User key={userId} userId={userId} />)
-            : null
+            : <tr><td colSpan="3">No users found</td></tr>
 
         content = (
             <table className="table table--users">
@@ -41,6 +46,8 @@ const UsersList = () => {
                 </tbody>
             </table>
         )
+    } else {
+        content = <p>No data available</p>
     }
 
     return content
