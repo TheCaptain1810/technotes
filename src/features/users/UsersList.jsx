@@ -1,7 +1,10 @@
 import { useGetUsersQuery } from "./usersApiSlice"
 import User from './User'
+import useTitle from "../../hooks/useTitle"
+import PulseLoader from 'react-spinners/PulseLoader'
 
 const UsersList = () => {
+    useTitle('techNotes: Users List')
 
     const {
         data: users,
@@ -9,28 +12,25 @@ const UsersList = () => {
         isSuccess,
         isError,
         error
-    } = useGetUsersQuery()
-
-    console.log("Users query result:", { users, isLoading, isSuccess, isError, error });
+    } = useGetUsersQuery('usersList', {
+        pollingInterval: 60000,
+        refetchOnFocus: true,
+        refetchOnMountOrArgChange: true
+    })
 
     let content
 
-    if (isLoading) {
-        content = <p>Loading...</p>
-    } else if (isError) {
-        content = (
-            <div className="error-message">
-                <p>Error: {error.error}</p>
-                <p>Status: {error.status}</p>
-                <p>Please try again later or contact support if the problem persists.</p>
-            </div>
-        )
-    } else if (isSuccess && users) {
+    if (isLoading) content = <PulseLoader color={"#FFF"} />
+
+    if (isError) {
+        content = <p className="errmsg">{error?.data?.message}</p>
+    }
+
+    if (isSuccess) {
+
         const { ids } = users
 
-        const tableContent = ids?.length
-            ? ids.map(userId => <User key={userId} userId={userId} />)
-            : <tr><td colSpan="3">No users found</td></tr>
+        const tableContent = ids?.length && ids.map(userId => <User key={userId} userId={userId} />)
 
         content = (
             <table className="table table--users">
@@ -46,8 +46,6 @@ const UsersList = () => {
                 </tbody>
             </table>
         )
-    } else {
-        content = <p>No data available</p>
     }
 
     return content
