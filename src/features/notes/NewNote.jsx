@@ -6,16 +6,35 @@ import useTitle from '../../hooks/useTitle'
 const NewNote = () => {
     useTitle('techNotes: New Note')
 
-    const { users } = useGetUsersQuery("usersList", {
-        selectFromResult: ({ data }) => ({
-            users: data?.ids.map(id => data?.entities[id])
+    const {
+        data: users,
+        isLoading,
+        isSuccess,
+        isError,
+        error
+    } = useGetUsersQuery("usersList", {
+        selectFromResult: ({ data, isLoading, isSuccess, isError, error }) => ({
+            data: data?.ids.map(id => data?.entities[id]),
+            isLoading,
+            isSuccess,
+            isError,
+            error
         }),
     })
 
-    if (!users?.length) return <PulseLoader color={"#FFF"} />
+    let content
 
-    const content = <NewNoteForm users={users} />
+    if (isLoading) {
+        content = <PulseLoader color={"#FFF"} />
+    } else if (isError) {
+        content = <p className="errmsg">{error?.data?.message || 'Failed to load users'}</p>
+    } else if (isSuccess && users?.length) {
+        content = <NewNoteForm users={users} />
+    } else if (isSuccess && !users?.length) {
+        content = <p className="errmsg">No users found</p>
+    }
 
     return content
 }
+
 export default NewNote
